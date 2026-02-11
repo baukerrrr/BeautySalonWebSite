@@ -1,6 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment (самое важное!)
+.venv/
 venv/
-*.pyc
-__pycache/
+env/
+
+# PyCharm
+.idea/
+
+# Database (если вдруг остался sqlite)
 db.sqlite3
+
+# OS generated files
 .DS_Store
-.env
+Thumbs.db# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment (самое важное!)
+.venv/
+venv/
+env/
+
+# PyCharm
+.idea/
+
+# Database (если вдруг остался sqlite)
+db.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db

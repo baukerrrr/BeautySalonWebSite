@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beauty Salon</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-cream: #fcfbf8;
+            --sage-green: #8da399;
+            --sage-dark: #6b8278;
+            --text-brown: #5d5650;
+            --soft-white: #ffffff;
+            --danger-red: #d9534f; /* Цвет для отмены */
+        }
+
+        body {
+            background-color: var(--bg-cream);
+            font-family: 'Lato', sans-serif;
+            color: var(--text-brown);
+        }
+
+        /* Навигация */
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 20px 0;
+        }
+        .navbar-brand {
+            font-family: 'Lora', serif;
+            font-size: 1.4rem;
+            font-style: italic;
+            color: var(--sage-dark) !important;
+        }
+
+        /* Таблица и Карточки - стили из предыдущего шага */
+        .schedule-card {
+            background: var(--soft-white);
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 15px 35px rgba(141, 163, 153, 0.15);
+            border: none;
+            margin-top: 30px;
+        }
+        .table { margin-bottom: 0; }
+        .table th {
+            font-family: 'Lora', serif;
+            color: var(--sage-dark);
+            padding: 25px;
+            border-bottom: 1px dashed #dcdcdc;
+            vertical-align: middle;
+        }
+        .table td {
+            padding: 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .time-col {
+            font-weight: 700;
+            color: var(--sage-green);
+            font-family: 'Lora', serif;
+            font-size: 1.1rem;
+        }
+
+        /* КНОПКИ */
+        .btn-book {
+            background-color: var(--sage-green);
+            color: white;
+            border-radius: 50px;
+            padding: 8px 25px;
+            text-decoration: none;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-book:hover {
+            background-color: var(--sage-dark);
+            color: white;
+        }
+
+        /* Обычная кнопка "Занято" (для клиентов) */
+        .btn-taken {
+            background-color: #f0eee9;
+            color: #b0aba5;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 25px;
+            cursor: default;
+        }
+
+        /* Кнопка "Удалить" (только для Админа) */
+        .btn-cancel {
+            background-color: white;
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+            border-radius: 50px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-cancel:hover {
+            background-color: var(--danger-red);
+            color: white;
+        }
+
+        /* Навигация дат */
+        .nav-pill-container {
+            display: inline-flex;
+            align-items: center;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+            gap: 15px;
+        }
+        .nav-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #fcfbf8;
+            color: var(--sage-green);
+            border: 1px solid var(--sage-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .nav-btn:hover { background: var(--sage-green); color: white; }
+        .nav-btn.disabled { border-color: #e0e0e0; color: #e0e0e0; pointer-events: none; }
+        .date-display { font-family: 'Lora', serif; font-size: 1.2rem; color: var(--text-brown); min-width: 180px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">Beauty Salon</a> </div>
+    </nav>
+
+    <div style="height: 100px;"></div>
+
+    <div class="container mb-5">
+
+        <div class="d-flex flex-column align-items-center mb-5">
+            <h1 class="mb-2">Запись на процедуры</h1>
+            <p style="color: #999; font-style: italic;" class="mb-4">Гармония тела и души</p>
+
+            <div class="nav-pill-container">
+                {% if show_prev %}
+                    <a href="?date={{ prev_date }}" class="nav-btn">&larr;</a>
+                {% else %}
+                    <span class="nav-btn disabled">&larr;</span>
+                {% endif %}
+                <span class="date-display">{{ target_date|date:"d E Y" }}</span>
+                <a href="?date={{ next_date }}" class="nav-btn">&rarr;</a>
+            </div>
+        </div>
+
+        <div class="schedule-card">
+            <div class="table-responsive">
+                <table class="table text-center">
+                    <thead>
+                        <tr>
+                            <th class="time-col" style="font-size: 0.9rem; opacity: 0.5;">ВРЕМЯ</th>
+                            {% for master in masters %}
+                                <th>
+                                    <div class="d-flex flex-column">
+                                        <span style="font-size: 1.1rem;">{{ master.first_name }}</span>
+                                        <span style="font-size: 0.8rem; opacity: 0.6; font-family: 'Lato', sans-serif;">{{ master.specialization }}</span>
+                                    </div>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in schedule %}
+                        <tr>
+                            <td class="time-col">{{ row.time }}</td>
+
+                            {% for slot in row.slots %}
+                            <td>
+                                {% if slot.is_taken %}
+                                    {% if user.is_staff and slot.appointment %}
+                                        <a href="{% url 'cancel_appointment' slot.appointment.id %}"
+                                           class="btn-cancel"
+                                           onclick="return confirm('Вы уверены, что хотите отменить запись клиента {{ slot.appointment.client.name }}?');">
+                                           Отменить ✕
+                                        </a>
+                                    {% elif user.is_staff and not slot.appointment %}
+                                        <button class="btn btn-taken" style="opacity: 0.5;">Занято</button>
+                                    {% else %}
+                                        <button class="btn btn-taken">Занято</button>
+                                    {% endif %}
+
+                                {% else %}
+                                    <a href="{% url 'book' slot.master.id slot.time_str slot.date_str %}" class="btn btn-book">
+                                        Записаться
+                                    </a>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_staff %}
+    <div class="fixed-bottom p-3 text-end" style="pointer-events: none;">
+        <button type="button" class="btn btn-dark rounded-pill shadow-lg px-4 py-2" style="pointer-events: auto; background-color: #5d5650; border: none;" data-bs-toggle="modal" data-bs-target="#financeModal">
+            💰 Доход за {{ target_date|date:"d.m" }}
+        </button>
+    </div>
+
+    <div class="modal fade" id="financeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background-color: #fcfbf8; border-bottom: 1px dashed #eee;">
+                    <h5 class="modal-title" style="font-family: 'Lora', serif; color: #5d5650;">
+                        Отчет за {{ target_date|date:"d E Y" }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <small class="text-muted text-uppercase">Общая выручка</small>
+                        <h2 style="color: #8da399; font-family: 'Lora', serif;">{{ total_income }} ₸</h2>
+                    </div>
+                    <div class="d-flex justify-content-between p-3 mb-2" style="background-color: #f8f9fa; border-radius: 15px;">
+                        <span class="text-muted">Beauty Salon (40%)</span>
+                        <span style="font-weight: bold; color: #5d5650;">+ {{ admin_share }} ₸</span>
+                    </div>
+                    <div class="d-flex justify-content-between p-3" style="background-color: #f8f9fa; border-radius: 15px;">
+                        <span class="text-muted">Мастера (60%)</span>
+                        <span style="font-weight: bold; color: #5d5650;">- {{ masters_share }} ₸</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% endif %}
+
+</body>
+</html>
